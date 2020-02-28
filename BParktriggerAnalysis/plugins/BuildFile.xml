@@ -1,0 +1,16 @@
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/MessageLogger"/>
+<use   name="FWCore/ParameterSet"/>
+<use   name="FWCore/PluginManager"/>
+<use   name="FWCore/ServiceRegistry"/>
+<use   name="CommonTools/UtilAlgos"/>
+<use   name="DataFormats/Math"/>
+<use   name="DataFormats/RecoCandidate"/>
+<use   name="DataFormats/VertexReco"/>
+<use   name="SimDataFormats/CrossingFrame"/>
+<use   name="SimDataFormats/GeneratorProducts"/>
+<use   name="SimDataFormats/PileupSummaryInfo"/>
+<use   name="SimDataFormats/TrackingAnalysis"/>
+<library   file="*.cc" name="BParkTriggerBParktriggerAnalysisPlugins">
+  <flags   EDM_PLUGIN="1"/>
+</library>
