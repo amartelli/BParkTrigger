@@ -11,13 +11,6 @@
 
 #cmsDriver.py step3 --conditions auto:phase1_2021_realistic -n 100 --era Run3 --eventcontent RECOSIM,DQM --runUnscheduled --customise_unsch=RecoPixelVertexing/Configuration/customizePixelTracksSoAonCPU.customizePixelTracksSoAonCPU -s RAW2DIGI:RawToDigi_pixelOnly,RECO:reconstruction_pixelTrackingOnly,VALIDATION:@pixelTrackingOnlyValidation,DQM:@pixelTrackingOnlyDQM --datatier GEN-SIM-RECO,DQMIO --geometry DB:Extended --fileout file:step3.root --dirin=/eos/cms/store/user/amartell/BPrk/MC_forHLT2021/ --filein BPH-RunIIFall18_DIGIRAW-00214_forHLT_noTagMu_part0_noPU.root --no_exec --python_filename=step3_RAW-RECOwHLT_Valid.py
 
-# relax cuts for tracking particles (add missing lines)
-##from Configuration.Eras.Era_Run3_cff import Run3
-##process = cms.Process('RECO',Run3)
-#from SimGeneral.MixingModule.trackingTruthProducer_cfi import trackingParticles
-#trackingParticles.vertexDistanceCut = cms.double(100.)
-## import of standard configurations
-
 # keep trackingParticles and association map (trackingP - pixelTracks) to output
 ## Additional output definition
 #process.RECOSIMoutput.outputCommands += cms.untracked.vstring('keep *_*_MergedTrackTruth_*', 

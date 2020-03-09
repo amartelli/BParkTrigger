@@ -83,6 +83,9 @@ void plotEfficiency(){
   
   std::cout << " >>> file loaded " << std::endl;
 
+  TH1F* h_pixTrk_pt[4];
+  TH1F* h_trkP_pt[4];
+
   TH1F* h_ratio_pixTrk_trkP_pu[4];
   TH1F* h_ratio_pixTrk_trkP_eta[4];
   TH1F* h_ratio_pixTrk_trkP_phi[4];
@@ -92,26 +95,36 @@ void plotEfficiency(){
   TH1F* h_ratio_pixTrk_trkP_Bmass = (TH1F*)(inF->Get("myOutputTest/h_ratio_pixTrk_trkP_Bmass"));
 
   for(int ij=0; ij<4; ++ij){
+    h_pixTrk_pt[ij] = (TH1F*)(inF->Get(Form("myOutputTest/h_pixTrk_pt_%d", ij)));
+    h_trkP_pt[ij] = (TH1F*)(inF->Get(Form("myOutputTest/h_trkP_pt_%d", ij)));
     h_ratio_pixTrk_trkP_pu[ij] = (TH1F*)(inF->Get(Form("myOutputTest/h_ratio_pixTrk_trkP_pu_%d", ij)));
     h_ratio_pixTrk_trkP_eta[ij] = (TH1F*)(inF->Get(Form("myOutputTest/h_ratio_pixTrk_trkP_eta_%d", ij)));
     h_ratio_pixTrk_trkP_phi[ij] = (TH1F*)(inF->Get(Form("myOutputTest/h_ratio_pixTrk_trkP_phi_%d", ij)));
     h_ratio_pixTrk_trkP_pt[ij] = (TH1F*)(inF->Get(Form("myOutputTest/h_ratio_pixTrk_trkP_pt_%d", ij)));   
 
+    h_pixTrk_pt[ij]->SetLineColor(iColors[ij]);
+    h_trkP_pt[ij]->SetLineColor(iColors[ij]);
     h_ratio_pixTrk_trkP_pu[ij]->SetLineColor(iColors[ij]);
     h_ratio_pixTrk_trkP_eta[ij]->SetLineColor(iColors[ij]);
     h_ratio_pixTrk_trkP_phi[ij]->SetLineColor(iColors[ij]);
     h_ratio_pixTrk_trkP_pt[ij]->SetLineColor(iColors[ij]);
 
+    h_pixTrk_pt[ij]->SetLineWidth(2);
+    h_trkP_pt[ij]->SetLineWidth(2);
     h_ratio_pixTrk_trkP_pu[ij]->SetLineWidth(2);
     h_ratio_pixTrk_trkP_eta[ij]->SetLineWidth(2);
     h_ratio_pixTrk_trkP_phi[ij]->SetLineWidth(2);
     h_ratio_pixTrk_trkP_pt[ij]->SetLineWidth(2);
 
+    h_pixTrk_pt[ij]->SetMarkerColor(iColors[ij]);
+    h_trkP_pt[ij]->SetMarkerColor(iColors[ij]);
     h_ratio_pixTrk_trkP_pu[ij]->SetMarkerColor(iColors[ij]);
     h_ratio_pixTrk_trkP_eta[ij]->SetMarkerColor(iColors[ij]);
     h_ratio_pixTrk_trkP_phi[ij]->SetMarkerColor(iColors[ij]);
     h_ratio_pixTrk_trkP_pt[ij]->SetMarkerColor(iColors[ij]);
 
+    h_pixTrk_pt[ij]->SetMarkerStyle(iStyle[ij]);
+    h_trkP_pt[ij]->SetMarkerStyle(iStyle[ij]);
     h_ratio_pixTrk_trkP_pu[ij]->SetMarkerStyle(iStyle[ij]);
     h_ratio_pixTrk_trkP_eta[ij]->SetMarkerStyle(iStyle[ij]);
     h_ratio_pixTrk_trkP_phi[ij]->SetMarkerStyle(iStyle[ij]);
@@ -245,6 +258,37 @@ void plotEfficiency(){
   ch_Bmass_pixTracks->Print("plots/h_ratio_pixTrk_trkP_Bmass_pixTracks.pdf", "pdf");
   ch_Bmass_pixTracks->Print("plots/h_ratio_pixTrk_trkP_Bmass_pixTracks.root", "root");
 
+  ////////
+  TCanvas* ch_pixTrk_pt = new TCanvas();
+  ch_pixTrk_pt->cd();
+  h_pixTrk_pt[0]->GetXaxis()->SetTitle("pixelTrack pt");
+  h_pixTrk_pt[0]->GetYaxis()->SetTitle("nEvents");
+  h_pixTrk_pt[0]->GetYaxis()->SetRangeUser(0., 600.);
+  h_pixTrk_pt[0]->GetXaxis()->SetRangeUser(0., 10);
+  h_pixTrk_pt[0]->Draw("h");
+  for(int iF=1; iF<partName.size(); ++iF){
+    h_pixTrk_pt[iF]->Draw("h, same");
+  }
+  legTGM->Draw("same");
+  ch_pixTrk_pt->Print("plots/h_pixTrk_pt.png", "png");
+  ch_pixTrk_pt->Print("plots/h_pixTrk_pt.pdf", "pdf");
+  ch_pixTrk_pt->Print("plots/h_pixTrk_pt.root", "root");
+
+
+  TCanvas* ch_trkP_pt = new TCanvas();
+  ch_trkP_pt->cd();
+  h_trkP_pt[0]->GetXaxis()->SetTitle("genTrack pt");
+  h_trkP_pt[0]->GetYaxis()->SetTitle("nEvents");
+  h_trkP_pt[0]->GetYaxis()->SetRangeUser(0., 1.e3);
+  h_trkP_pt[0]->GetXaxis()->SetRangeUser(0., 10);
+  h_trkP_pt[0]->Draw("h");
+  for(int iF=1; iF<partName.size(); ++iF){
+    h_trkP_pt[iF]->Draw("h, same");
+  }
+  legTGM->Draw("same");
+  ch_trkP_pt->Print("plots/h_trkP_pt.png", "png");
+  ch_trkP_pt->Print("plots/h_trkP_pt.pdf", "pdf");
+  ch_trkP_pt->Print("plots/h_trkP_pt.root", "root");
 
 
   return;
