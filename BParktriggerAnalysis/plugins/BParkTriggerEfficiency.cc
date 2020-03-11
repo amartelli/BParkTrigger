@@ -17,6 +17,7 @@
 #include "DataFormats/Math/interface/Point3D.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/RefToBase.h"
@@ -41,6 +42,7 @@ typedef TrackingVertex::genv_iterator genv_iterator;
 typedef TrackingVertex::g4v_iterator g4v_iterator;
 
 typedef math::XYZPointD Point; 
+typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float> > XYZPointF;
 
 edm::Service<TFileService> fs;
 
@@ -57,7 +59,8 @@ public:
   int findGenBToKee(edm::Handle<edm::View<reco::GenParticle>> genPart,
 		    int& B_bc, int& l1_bc, int& l2_bc, int& k_bc, 
 		    TLorentzVector& Bgen, TLorentzVector& L1gen,
-		    TLorentzVector& L2gen, TLorentzVector& Kgen);
+		    TLorentzVector& L2gen, TLorentzVector& Kgen,
+		    Point& BdecayVtx);
 
 private:
   edm::ParameterSet conf_;
@@ -71,6 +74,9 @@ private:
   
   edm::EDGetTokenT<reco::SimToRecoCollection> trackSimToRecoAssociationToken_;
   edm::EDGetTokenT<std::vector<PileupSummaryInfo>> puToken_;
+
+  edm::EDGetTokenT<XYZPointF> genVtxPositionToken_;
+
 
   TH1F* h_dR_e1_pixel_Tracking;
   TH1F* h_dR_e2_pixel_Tracking;
@@ -86,6 +92,9 @@ private:
   TH1F* h_trkP_eta[4];
   TH1F* h_trkP_phi[4];
   TH1F* h_trkP_pt[4];
+  //
+  TH1F* h_trkP_Maxeta;
+  TH1F* h_trkP_Minpt;
 
   TH1F* h_pixTrk_pu[4];
   TH1F* h_pixTrk_eta[4];
@@ -96,11 +105,18 @@ private:
   TH1F* h_pixTrk_pR_eta[4];
   TH1F* h_pixTrk_pR_phi[4];
   TH1F* h_pixTrk_pR_pt[4];
-  
+  //
+  TH1F* h_pixTrk_pR_Maxeta;
+  TH1F* h_pixTrk_pR_Minpt;
+
+
   TH1F* h_ratio_pixTrk_trkP_pu[4];
   TH1F* h_ratio_pixTrk_trkP_eta[4];
   TH1F* h_ratio_pixTrk_trkP_phi[4];
   TH1F* h_ratio_pixTrk_trkP_pt[4];
+  //
+  TH1F* h_ratio_pixTrk_trkP_Maxeta;
+  TH1F* h_ratio_pixTrk_trkP_Minpt;
 
 
   TH1F* h_trkP_Bmass;
@@ -108,6 +124,11 @@ private:
   TH1F* h_pixTrk_Bmass;
   TH1F* h_pixTrk_pR_Bmass;
   TH1F* h_ratio_pixTrk_trkP_Bmass;
+
+  TH1F* h_trkP_Bdxy;
+  TH1F* h_pixTrk_pR_Bdxy;
+  TH1F* h_ratio_pixTrk_trkP_Bdxy;
+
 
   int nTotEvents;
   int nEvents_Bdecay;
@@ -128,7 +149,8 @@ BParkTriggerEfficiency::BParkTriggerEfficiency(const edm::ParameterSet &conf):
   inputPixTrkToken_(consumes<reco::TrackCollection>(conf.getParameter<edm::InputTag>("pixelTracks"))),
   inputPixVtxToken_(consumes<reco::VertexCollection>(conf.getParameter<edm::InputTag>("pixelVertex"))),
   trackSimToRecoAssociationToken_(consumes<reco::SimToRecoCollection>(conf.getParameter<edm::InputTag>("trackAssociation"))),
-  puToken_(consumes<std::vector<PileupSummaryInfo>>(conf.getUntrackedParameter<edm::InputTag>("puSummary")))
+  puToken_(consumes<std::vector<PileupSummaryInfo>>(conf.getUntrackedParameter<edm::InputTag>("puSummary"))),
+  genVtxPositionToken_(consumes<XYZPointF>(conf.getParameter<edm::InputTag>("genPxyz0")))
 { 
   conf_ = conf; 
   debug = false;
@@ -194,6 +216,22 @@ BParkTriggerEfficiency::BParkTriggerEfficiency(const edm::ParameterSet &conf):
     h_ratio_pixTrk_trkP_phi[ij]->Sumw2();
     h_ratio_pixTrk_trkP_pt[ij]->Sumw2();
   }
+  //vs min pt max eta
+  h_trkP_Maxeta = fs->make<TH1F>("h_trkP_Maxeta", "", 40, -5, 5);
+  h_trkP_Minpt = fs->make<TH1F>("h_trkP_Minpt", "", 40, 0, 20);
+  h_trkP_Maxeta->Sumw2();
+  h_trkP_Minpt->Sumw2();
+  //                
+  h_pixTrk_pR_Maxeta = fs->make<TH1F>("h_pixTrk_pR_Maxeta", "", 40, -5, 5);
+  h_pixTrk_pR_Minpt = fs->make<TH1F>("h_pixTrk_pR_Minpt", "", 40, 0, 20);
+  h_pixTrk_pR_Maxeta->Sumw2();
+  h_pixTrk_pR_Minpt->Sumw2();
+  //
+  h_ratio_pixTrk_trkP_Maxeta = fs->make<TH1F>("h_ratio_pixTrk_trkP_Maxeta", "", 40, -5, 5);
+  h_ratio_pixTrk_trkP_Maxeta->Sumw2();
+  h_ratio_pixTrk_trkP_Minpt = fs->make<TH1F>("h_ratio_pixTrk_trkP_Minpt", "", 40, 0, 20);
+  h_ratio_pixTrk_trkP_Minpt->Sumw2();
+
 
   h_trkP_Bmass = fs->make<TH1F>("h_trkP_Bmass", "", 80, 0., 8.); 
   h_gen_Bmass = fs->make<TH1F>("h_gen_Bmass", "", 80, 0., 8.); 
@@ -206,6 +244,14 @@ BParkTriggerEfficiency::BParkTriggerEfficiency(const edm::ParameterSet &conf):
   h_pixTrk_Bmass->Sumw2();
   h_pixTrk_pR_Bmass->Sumw2();
   h_ratio_pixTrk_trkP_Bmass->Sumw2();
+  //                             
+  h_trkP_Bdxy = fs->make<TH1F>("h_trkP_Bdxy", "", 50, -1., 1.);
+  h_pixTrk_pR_Bdxy = fs->make<TH1F>("h_pixTrk_pR_Bdxy", "", 50, -1., 1.);
+  h_ratio_pixTrk_trkP_Bdxy = fs->make<TH1F>("h_ratio_pixTrk_trkP_Bdxy", "", 50, -1., 1.);
+  h_trkP_Bdxy->Sumw2();
+  h_pixTrk_pR_Bdxy->Sumw2();
+  h_ratio_pixTrk_trkP_Bdxy->Sumw2();
+
 }
 
 void BParkTriggerEfficiency::analyze(const edm::Event &event, const edm::EventSetup &c) {
@@ -248,6 +294,11 @@ void BParkTriggerEfficiency::analyze(const edm::Event &event, const edm::EventSe
   }
   float trueNumInteractions = it->getTrueNumInteractions();
 
+  const auto& genVtxPositionHandle = event.getHandle(genVtxPositionToken_);
+  float PVx = genVtxPositionHandle->x();
+  float PVy = genVtxPositionHandle->y();
+  float PVz = genVtxPositionHandle->z();
+
 
   if(debug)  std::cout << " \n " << std::endl;
 
@@ -259,10 +310,20 @@ void BParkTriggerEfficiency::analyze(const edm::Event &event, const edm::EventSe
   int k_idx = -1;
 
   TLorentzVector Bdecay[4];
-  int BdecayOk = findGenBToKee(genPart, B_idx, l1_idx, l2_idx,  k_idx, Bdecay[3], Bdecay[0], Bdecay[1], Bdecay[2]);
+  Point BdecayVtx;
+  int BdecayOk = findGenBToKee(genPart, B_idx, l1_idx, l2_idx,  k_idx, Bdecay[3], Bdecay[0], Bdecay[1], Bdecay[2], BdecayVtx);
   
   if(!BdecayOk) return;
   ++nEvents_Bdecay;
+
+  int etaMax = (std::abs(Bdecay[0].Eta()) > std::abs(Bdecay[1].Eta())) ? 0 : 1;
+  etaMax = (std::abs(Bdecay[etaMax].Eta()) > std::abs(Bdecay[2].Eta())) ? etaMax : 2;
+  float maxEta_Bdecay = Bdecay[etaMax].Eta();
+
+  int ptMin = (Bdecay[0].Pt() < Bdecay[1].Pt()) ? 0 : 1;
+  ptMin = (Bdecay[ptMin].Pt() < Bdecay[2].Pt()) ? ptMin : 2;
+  float minPt_Bdecay = Bdecay[ptMin].Pt();
+
 
   if(debug)  
     std::cout << " >> B_idx = " << B_idx << " l1_idx = " << l1_idx 
@@ -272,6 +333,13 @@ void BParkTriggerEfficiency::analyze(const edm::Event &event, const edm::EventSe
   const reco::Candidate* l1genP = BgenP->daughter(l1_idx);
   const reco::Candidate* l2genP = BgenP->daughter(l2_idx);  
   const reco::Candidate* kgenP = BgenP->daughter(k_idx);
+
+
+  float BvtxX = BdecayVtx.x();
+  float BvtxY = BdecayVtx.y();
+  float BvtxZ = BdecayVtx.z();
+  float Bdxy = sqrt(pow(BvtxX - PVx, 2) + pow(BvtxY - PVy, 2));
+
 
   // 0 = e1, 1 = e2, 3 = k, 4 = B
   bool matched_gen[4] = {0, 0, 0, 0};
@@ -379,6 +447,10 @@ void BParkTriggerEfficiency::analyze(const edm::Event &event, const edm::EventSe
     h_trkP_phi[idxMatched]->Fill(Bdecay[idxMatched].Phi()); 
     h_trkP_pt[idxMatched]->Fill(Bdecay[idxMatched].Pt()); 
     h_trkP_Bmass->Fill(Bdecay[idxMatched].M()); 
+
+    h_trkP_Bdxy->Fill(Bdxy);
+    h_trkP_Maxeta->Fill(maxEta_Bdecay);
+    h_trkP_Minpt->Fill(minPt_Bdecay);
     //    std::cout << " >> trackingParticles matched " << std::endl;
   }
   else{
@@ -407,6 +479,10 @@ void BParkTriggerEfficiency::analyze(const edm::Event &event, const edm::EventSe
     h_pixTrk_pR_phi[idxMatched]->Fill(Bdecay[idxMatched].Phi());
     h_pixTrk_pR_pt[idxMatched]->Fill(Bdecay[idxMatched].Pt());
     h_pixTrk_pR_Bmass->Fill(Bdecay[idxMatched].M());
+
+    h_pixTrk_pR_Bdxy->Fill(Bdxy);
+    h_pixTrk_pR_Maxeta->Fill(maxEta_Bdecay);
+    h_pixTrk_pR_Minpt->Fill(minPt_Bdecay);
     //    std::cout << " >> pixelTracks matched " << std::endl;
   }
 
@@ -459,7 +535,8 @@ void BParkTriggerEfficiency::analyze(const edm::Event &event, const edm::EventSe
 int BParkTriggerEfficiency::findGenBToKee(edm::Handle<edm::View<reco::GenParticle>> genPart, 
 					  int& B_bc, int& l1_bc, int& l2_bc, int& k_bc, 
 					  TLorentzVector& Bgen, TLorentzVector& L1gen,
-					  TLorentzVector& L2gen, TLorentzVector& Kgen){
+					  TLorentzVector& L2gen, TLorentzVector& Kgen,
+					  Point& BdecayVtx){
 
   int nGenPart = genPart->size();
   if(debug) std::cout << " \n\n nGenPart = " << nGenPart << std::endl;
@@ -560,8 +637,9 @@ int BParkTriggerEfficiency::findGenBToKee(edm::Handle<edm::View<reco::GenParticl
 	      std::cout << " problem with Vtx " << " kVtx = " << kVtx << " e1Vtx = " << e1Vtx << " e2Vtx = " << e2Vtx << std::endl;
 	      continue;
 	    }
-	    genpart_B_index = i_Bu;                                  
-	    // std::cout << " genpart_lep1FromB_index =  " << genpart_lep1FromB_index << std::endl;    
+	    genpart_B_index = i_Bu;
+	    BdecayVtx = e1Vtx;
+	    //std::cout << " genpart_lep1FromB_index =  " << genpart_lep1FromB_index << " l1 vertex = " << e1Vtx << std::endl;
             if(debug) std::cout << " non resonant " << std::endl;
             //break;                                                             
           }
@@ -660,6 +738,10 @@ void BParkTriggerEfficiency::endJob(){
   }
 
   h_ratio_pixTrk_trkP_Bmass->Divide(h_pixTrk_pR_Bmass, h_trkP_Bmass);
+
+  h_ratio_pixTrk_trkP_Maxeta->Divide(h_pixTrk_pR_Maxeta, h_trkP_Maxeta);
+  h_ratio_pixTrk_trkP_Minpt->Divide(h_pixTrk_pR_Minpt, h_trkP_Minpt);
+  h_ratio_pixTrk_trkP_Bdxy->Divide(h_pixTrk_pR_Bdxy, h_trkP_Bdxy);
 
   std::cout << " \n nTotEvents = " << nTotEvents << " nEvents_Bdecay = " << nEvents_Bdecay 
 	    << " nEvents_trkP_matched = " << nEvents_trkP_matched << " nEvents_pixTrk_matched = " << nEvents_pixTrk_matched << std::endl;

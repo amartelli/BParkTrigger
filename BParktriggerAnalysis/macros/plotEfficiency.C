@@ -90,9 +90,16 @@ void plotEfficiency(){
   TH1F* h_ratio_pixTrk_trkP_eta[4];
   TH1F* h_ratio_pixTrk_trkP_phi[4];
   TH1F* h_ratio_pixTrk_trkP_pt[4];
+  //
+  TH1F* h_ratio_pixTrk_trkP_Maxeta = (TH1F*)(inF->Get("myOutputTest/h_ratio_pixTrk_trkP_Maxeta"));
+  TH1F* h_ratio_pixTrk_trkP_Minpt = (TH1F*)(inF->Get("myOutputTest/h_ratio_pixTrk_trkP_Minpt"));
+  TH1F* h_trkP_Bdxy = (TH1F*)(inF->Get("myOutputTest/h_trkP_Bdxy"));
+
+
   TH1F* h_trkP_Bmass = (TH1F*)(inF->Get("myOutputTest/h_trkP_Bmass"));
   TH1F* h_pixTrk_Bmass = (TH1F*)(inF->Get("myOutputTest/h_pixTrk_Bmass"));
   TH1F* h_ratio_pixTrk_trkP_Bmass = (TH1F*)(inF->Get("myOutputTest/h_ratio_pixTrk_trkP_Bmass"));
+  TH1F* h_ratio_pixTrk_trkP_Bdxy = (TH1F*)(inF->Get("myOutputTest/h_ratio_pixTrk_trkP_Bdxy"));
 
   for(int ij=0; ij<4; ++ij){
     h_pixTrk_pt[ij] = (TH1F*)(inF->Get(Form("myOutputTest/h_pixTrk_pt_%d", ij)));
@@ -130,6 +137,29 @@ void plotEfficiency(){
     h_ratio_pixTrk_trkP_phi[ij]->SetMarkerStyle(iStyle[ij]);
     h_ratio_pixTrk_trkP_pt[ij]->SetMarkerStyle(iStyle[ij]);
   }
+  h_ratio_pixTrk_trkP_Maxeta->SetLineWidth(2);
+  h_ratio_pixTrk_trkP_Maxeta->SetLineColor(kBlack);
+  h_ratio_pixTrk_trkP_Maxeta->SetMarkerStyle(iStyle[3]);
+  h_ratio_pixTrk_trkP_Maxeta->SetMarkerStyle(iStyle[3]);
+  h_ratio_pixTrk_trkP_Maxeta->SetMarkerColor(kBlack);
+  //
+  h_ratio_pixTrk_trkP_Minpt->SetLineWidth(2);
+  h_ratio_pixTrk_trkP_Minpt->SetLineColor(kBlack);
+  h_ratio_pixTrk_trkP_Minpt->SetMarkerStyle(iStyle[3]);
+  h_ratio_pixTrk_trkP_Minpt->SetMarkerStyle(iStyle[3]);
+  h_ratio_pixTrk_trkP_Minpt->SetMarkerColor(kBlack);
+
+  h_trkP_Bdxy->SetLineWidth(2);
+  h_trkP_Bdxy->SetMarkerStyle(iStyle[3]);
+  h_trkP_Bdxy->SetMarkerColor(kBlack);
+  h_trkP_Bdxy->SetLineColor(kBlack);
+
+
+  h_ratio_pixTrk_trkP_Bdxy->SetLineWidth(2);
+  h_ratio_pixTrk_trkP_Bdxy->SetMarkerStyle(iStyle[3]);
+  h_ratio_pixTrk_trkP_Bdxy->SetMarkerColor(kBlack);
+  h_ratio_pixTrk_trkP_Bdxy->SetLineColor(kBlack);
+
   h_ratio_pixTrk_trkP_Bmass->SetLineWidth(2);
   h_trkP_Bmass->SetLineWidth(2);
   h_pixTrk_Bmass->SetLineWidth(2);
@@ -289,6 +319,65 @@ void plotEfficiency(){
   ch_trkP_pt->Print("plots/h_trkP_pt.png", "png");
   ch_trkP_pt->Print("plots/h_trkP_pt.pdf", "pdf");
   ch_trkP_pt->Print("plots/h_trkP_pt.root", "root");
+
+
+
+
+  //maxEta
+  TCanvas* ch_Maxeta = new TCanvas();
+  ch_Maxeta->cd();
+  h_ratio_pixTrk_trkP_eta[0]->GetXaxis()->SetTitle("max gen #eta");
+  h_ratio_pixTrk_trkP_eta[0]->GetYaxis()->SetTitle("eff (pixTracks / gen)");
+  h_ratio_pixTrk_trkP_eta[0]->GetYaxis()->SetRangeUser(0., 1.2);
+  h_ratio_pixTrk_trkP_eta[0]->Draw("pe");
+  for(int iF=1; iF<partName.size()-1; ++iF){
+    h_ratio_pixTrk_trkP_eta[iF]->Draw("pe, same");
+  }
+  h_ratio_pixTrk_trkP_Maxeta->Draw("pe, same");
+  legTGM->Draw("same");
+  ch_Maxeta->Print("plots/h_ratio_pixTrk_trkP_Maxeta.png", "png");
+  ch_Maxeta->Print("plots/h_ratio_pixTrk_trkP_Maxeta.pdf", "pdf");
+  ch_Maxeta->Print("plots/h_ratio_pixTrk_trkP_Maxeta.root", "root");
+  //
+  TCanvas* ch_Minpt = new TCanvas();
+  ch_Minpt->cd();
+  h_ratio_pixTrk_trkP_pt[0]->GetXaxis()->SetTitle("min gen pt");
+  h_ratio_pixTrk_trkP_pt[0]->GetYaxis()->SetTitle("eff (pixTracks / gen)");
+  h_ratio_pixTrk_trkP_pt[0]->GetYaxis()->SetRangeUser(0., 1.2);
+  h_ratio_pixTrk_trkP_pt[0]->Draw("pe");
+  for(int iF=1; iF<partName.size()-1; ++iF){
+    h_ratio_pixTrk_trkP_pt[iF]->Draw("pe, same");
+  }
+  h_ratio_pixTrk_trkP_Minpt->Draw("pe, same");
+  legTGM->Draw("same");
+  ch_Minpt->Print("plots/h_ratio_pixTrk_trkP_Minpt.png", "png");
+  ch_Minpt->Print("plots/h_ratio_pixTrk_trkP_Minpt.pdf", "pdf");
+  ch_Minpt->Print("plots/h_ratio_pixTrk_trkP_Minpt.root", "root");
+
+
+  TCanvas* ch_Bdxy_eff = new TCanvas();
+  ch_Bdxy_eff->cd();
+  h_ratio_pixTrk_trkP_Bdxy->GetXaxis()->SetTitle("gen Bdxy");
+  h_ratio_pixTrk_trkP_Bdxy->GetYaxis()->SetTitle("eff (pixTracks / gen)");
+  h_ratio_pixTrk_trkP_Bdxy->GetYaxis()->SetRangeUser(0., 1.2);
+  h_ratio_pixTrk_trkP_Bdxy->GetXaxis()->SetRangeUser(-0.1, 1.);
+  h_ratio_pixTrk_trkP_Bdxy->Draw("pe");
+  ch_Bdxy_eff->Print("plots/h_ratio_pixTrk_trkP_Bdxy_eff.png", "png");
+  ch_Bdxy_eff->Print("plots/h_ratio_pixTrk_trkP_Bdxy_eff.pdf", "pdf");
+  ch_Bdxy_eff->Print("plots/h_ratio_pixTrk_trkP_Bdxy_eff.root", "root");
+
+
+  TCanvas* ch_Bdxy_gen = new TCanvas();
+  gPad->SetLogy();
+  ch_Bdxy_gen->cd();
+  h_trkP_Bdxy->GetXaxis()->SetRangeUser(-0.1, 1.);
+  h_trkP_Bdxy->GetXaxis()->SetTitle("gen dxy(PV - BdecayVtx)");
+  h_trkP_Bdxy->GetYaxis()->SetTitle("n.Events");
+  h_trkP_Bdxy->Draw("h");
+  ch_Bdxy_gen->Print("plots/h_trkP_Bdxy_gen.png", "png");
+  ch_Bdxy_gen->Print("plots/h_trkP_Bdxy_gen.pdf", "pdf");
+  ch_Bdxy_gen->Print("plots/h_trkP_Bdxy_gen.root", "root");
+
 
 
   return;

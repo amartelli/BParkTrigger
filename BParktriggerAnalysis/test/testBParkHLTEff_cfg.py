@@ -50,15 +50,15 @@ process.myOutputTest = cms.EDAnalyzer(
     genParticles = cms.InputTag("genParticles::DIGI2RAW"),
     trackAssociation = cms.InputTag("trackingParticlePixelTrackAsssociation"),
     puSummary = cms.untracked.InputTag("addPileupInfo::DIGI2RAW"),
+    genPxyz0 = cms.InputTag("genParticles:xyz0"),
     dumpVertexes = cms.untracked.bool(True),
     dumpOnlyBremsstrahlung = cms.untracked.bool(False)  
 )
 
 
 process.TFileService = cms.Service("TFileService",
-                                   #fileName = cms.string("file:BPark_HLTEff_valid_withPU.root")
+                                   fileName = cms.string("file:BPark_HLTEff_valid_withPU.root")
                                    #fileName = cms.string("file:BPark_HLTEff_valid_noPU.root")
-                                   fileName = cms.string("file:testVtx.root")
                                )
 
 process.p = cms.EndPath(process.myOutputTest)
