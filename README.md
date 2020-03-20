@@ -9,6 +9,13 @@
 
 
 ## analysis
+```shell
+cmsrel CMSSW_11_1_0_pre2_Patatrack
+cd CMSSW_11_1_0_pre2_Patatrack/src
+cmsenv
+git clone git@github.com:amartelli/BParkTrigger.git
+```
+
 - efficiency of reco wrt gen:
    - *pixelTracks wrt trackingParticles*	
    - *and pixelTracks with common pixelVertex*
